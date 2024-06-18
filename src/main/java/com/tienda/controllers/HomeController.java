@@ -1,18 +1,19 @@
 package com.tienda.controllers;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -24,6 +25,7 @@ import com.tienda.entities.Categoria;
 import com.tienda.entities.Comentario;
 import com.tienda.entities.Medida;
 import com.tienda.entities.Producto;
+import com.tienda.entities.ProductoDTO;
 import com.tienda.entities.Usuario;
 import com.tienda.entities.listas.ListaMedidas;
 import com.tienda.services.ICategoriaService;
@@ -33,21 +35,26 @@ import com.tienda.services.IUsuarioService;
 
 import jakarta.validation.Valid;
 
+@CrossOrigin(origins = "https://www.voiceflow.com/")
 @RestController
 @RequestMapping("/api/home")
 public class HomeController {
 
-	@Autowired
 	private IComentarioService comentarioService;
 
-	@Autowired
 	private IUsuarioService usuarioService;
 
-	@Autowired
 	private IProductoService productoService;
 
-	@Autowired
 	private ICategoriaService categoriaService;
+
+	public HomeController(IComentarioService comentarioService, IUsuarioService usuarioService,
+			IProductoService productoService, ICategoriaService categoriaService) {
+		this.comentarioService = comentarioService;
+		this.usuarioService = usuarioService;
+		this.productoService = productoService;
+		this.categoriaService = categoriaService;
+	}
 
 	@GetMapping()
 	public List<Producto> catalogo() {
@@ -168,9 +175,57 @@ public class HomeController {
 	}
 
 	@GetMapping("/names")
-	public List<String> getProductNames() {
+	public ResponseEntity<?> getProductNames() {
 
-		return productoService.getProductos().stream().map(Producto::getNombre).collect(Collectors.toList());
+		return ResponseEntity.ok(productoService.getProductos());
+	}
+
+	@GetMapping("/dsd")
+	public List<ProductoDTO> getP() {
+		List<Producto> p = productoService.getProductos();
+		List<ProductoDTO> pd = new ArrayList<>();
+
+		for (Producto producto : p) {
+			ProductoDTO productoDTO = new ProductoDTO();
+			productoDTO.setId((long) producto.getId());
+			productoDTO.setNombre(producto.getNombre());
+			productoDTO.setStock(producto.getStock());
+			productoDTO.setCategoria(producto.getCategoria().getNombre());
+			productoDTO.setMarca(producto.getMarca().getNombre());
+			productoDTO.setPrecio(producto.getPrecioVenta());
+			pd.add(productoDTO);
+		}
+
+		return pd;
+	}
+
+	@GetMapping("/lista")
+	public ResponseEntity<Map<String, Object>> obtenerProductos() {
+		Map<String, Object> response = new HashMap<>();
+		List<Producto> p = productoService.getProductos();
+		List<ProductoDTO> pd = new ArrayList<>();
+		for (Producto producto : p) {
+			ProductoDTO productoDTO = new ProductoDTO();
+			productoDTO.setId((long) producto.getId());
+			productoDTO.setNombre(producto.getNombre());
+			productoDTO.setStock(producto.getStock());
+			productoDTO.setCategoria(producto.getCategoria().getNombre());
+			productoDTO.setMarca(producto.getMarca().getNombre());
+			productoDTO.setPrecio(producto.getPrecioVenta());
+			productoDTO.setDescripcion(producto.getDescripcion());
+			pd.add(productoDTO);
+		}
+
+		StringBuilder sb = new StringBuilder();
+		for (ProductoDTO producto : pd) {
+			sb.append("id: ").append(producto.getId()).append(", ").append("nombre: ").append(producto.getNombre())
+					.append(", ").append("stock: ").append(producto.getStock()).append(", ").append("categoria: ")
+					.append(producto.getCategoria()).append(", ").append("marca: ").append(producto.getMarca())
+					.append(", ").append("precio: ").append(producto.getPrecio()).append(", ").append("descripcion: ")
+					.append(producto.getDescripcion()).append("    ");
+		}
+		response.put("productos", sb.toString());
+		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
 }

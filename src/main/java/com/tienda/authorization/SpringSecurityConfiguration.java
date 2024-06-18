@@ -65,7 +65,7 @@ public class SpringSecurityConfiguration {
 
 		CorsConfiguration config = new CorsConfiguration();
 		config.setAllowedOriginPatterns(Arrays.asList("*"));
-		config.setAllowedOrigins(Arrays.asList("http://localhost:4200"));
+		//config.setAllowedOrigins(Arrays.asList("http://localhost:4200","https://www.voiceflow.com/"));
 		config.setAllowedMethods(Arrays.asList("POST", "GET", "PUT", "DELETE"));
 		config.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
 		config.setAllowCredentials(true);

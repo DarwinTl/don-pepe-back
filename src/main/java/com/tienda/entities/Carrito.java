@@ -76,7 +76,6 @@ public class Carrito {
 	}
 
 	public Carrito(int id, Usuario usuario, List<ItemCarrito> items, String estado, double total) {
-		super();
 		this.id = id;
 		this.usuario = usuario;
 		this.items = items;

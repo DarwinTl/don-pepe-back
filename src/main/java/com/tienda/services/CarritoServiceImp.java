@@ -1,10 +1,9 @@
 package com.tienda.services;
 
-
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.tienda.entities.Carrito;
@@ -18,17 +17,21 @@ import com.tienda.repositories.IUsuarioDao;
 @Service
 public class CarritoServiceImp implements ICarritoService {
 
-	@Autowired
 	private ICarritoDao carritoDao;
 
-	@Autowired
 	private IProductoDao productoDao;
 
-	@Autowired
 	private IUsuarioDao usuarioDao;
 
-	@Autowired
 	private IItemCarritoDao itemCarritoDao;
+
+	public CarritoServiceImp(ICarritoDao carritoDao, IProductoDao productoDao, IUsuarioDao usuarioDao,
+			IItemCarritoDao itemCarritoDao) {
+		this.carritoDao = carritoDao;
+		this.productoDao = productoDao;
+		this.usuarioDao = usuarioDao;
+		this.itemCarritoDao = itemCarritoDao;
+	}
 
 	@Override
 	public Carrito getCarritoByUsuario(int idUsuario) {
@@ -43,9 +46,11 @@ public class CarritoServiceImp implements ICarritoService {
 
 	@Override
 	public Carrito agregarItem(int idUsuario, int idProducto, int cantidad) {
+
 		Carrito c = carritoDao.findByUsuario(idUsuario);
 		if (c == null) {
 			c = new Carrito();
+			c.setItems(new ArrayList<>());
 			c.setUsuario(usuarioDao.findById(idUsuario).orElseThrow());
 			carritoDao.save(c);
 		}
@@ -78,21 +83,35 @@ public class CarritoServiceImp implements ICarritoService {
 	@Override
 	public Carrito quitarItem(int idUsuario, int item) {
 		Carrito c = carritoDao.findByUsuario(idUsuario);
-		ItemCarrito itemAQuitar = c.getItems().get(item);
+		Optional<ItemCarrito> itemAQuitar = c.getItems().stream().filter(i -> i.getId() == item).findFirst();
 
-		if (itemAQuitar != null) {
-			c.getItems().remove(itemAQuitar);
-			itemCarritoDao.deleteById(itemAQuitar.getId());
+		if (itemAQuitar.isPresent()) {
+			c.getItems().remove(itemAQuitar.get());
+			itemCarritoDao.deleteById(itemAQuitar.get().getId());
 			carritoDao.save(c);
 		}
 		c.setTotal(c.getItems().stream().mapToDouble(ln -> ln.getImporte()).sum());
 		return c;
 	}
 
+	/*
+	 * @Override public Carrito quitarItem(int idUsuario, int item) { Carrito c =
+	 * carritoDao.findByUsuario(idUsuario); ItemCarrito itemAQuitar =
+	 * c.getItems().get(item);
+	 * 
+	 * if (itemAQuitar != null) { c.getItems().remove(itemAQuitar);
+	 * itemCarritoDao.deleteById(itemAQuitar.getId()); carritoDao.save(c); }
+	 * c.setTotal(c.getItems().stream().mapToDouble(ln -> ln.getImporte()).sum());
+	 * return c; }
+	 */
+
 	@Override
 	public Carrito vaciarCarrito(int idUsuario) {
 		Carrito c = carritoDao.findByUsuario(idUsuario);
-		c.getItems().clear();
+		c.setItems(new ArrayList<>());
+		itemCarritoDao.deleteAllByCarritoId((long) c.getId());
+		c.setTotal(0);
+		carritoDao.save(c);
 		return c;
 	}
 
