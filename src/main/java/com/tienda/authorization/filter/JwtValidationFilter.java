@@ -47,7 +47,6 @@ public class JwtValidationFilter extends BasicAuthenticationFilter {
 			String usuario = claims.getSubject();
 			int userId = claims.get("id", Integer.class);
 			String name = claims.get("name", String.class);
-			// String usuario2=(String) claims.get("username");
 			Object authoritiesClaimns = claims.get("authorities");
 
 			Collection<? extends GrantedAuthority> roles = Arrays.asList(

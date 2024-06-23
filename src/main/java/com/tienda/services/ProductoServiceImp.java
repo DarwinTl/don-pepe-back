@@ -3,7 +3,6 @@ package com.tienda.services;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -14,8 +13,11 @@ import com.tienda.repositories.IProductoDao;
 @Service
 public class ProductoServiceImp implements IProductoService {
 
-	@Autowired
 	private IProductoDao productoDao;
+
+	public ProductoServiceImp(IProductoDao productoDao) {
+		this.productoDao = productoDao;
+	}
 
 	@Override
 	public List<Producto> getProductos() {

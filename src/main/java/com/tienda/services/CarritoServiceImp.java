@@ -57,15 +57,19 @@ public class CarritoServiceImp implements ICarritoService {
 		Optional<ItemCarrito> itemRepetido = c.getItems().stream()
 				.filter(item -> item.getProducto().getId() == idProducto).findFirst();
 
+		Producto p = productoDao.findById(idProducto).orElseThrow();
+
+		if (p.getStock() < cantidad) {
+			throw new IllegalArgumentException("El producto no tiene suficiente stock");
+		}
+
 		if (itemRepetido.isPresent()) {
 			ItemCarrito item = itemRepetido.get();
 			item.setCantidad(item.getCantidad() + cantidad);
 			item.setImporte(item.getCantidad() * item.getProducto().getPrecioVenta());
 			itemCarritoDao.save(item);
-			c.setTotal(c.getItems().stream().mapToDouble(ln -> ln.getImporte()).sum());
 		} else {
 
-			Producto p = productoDao.findById(idProducto).orElseThrow();
 			ItemCarrito linea = new ItemCarrito();
 			linea.setCantidad(cantidad);
 			linea.setProducto(p);
@@ -73,37 +77,32 @@ public class CarritoServiceImp implements ICarritoService {
 			linea.setCarrito(c);
 			itemCarritoDao.save(linea);
 			c.getItems().add(linea);
-			c.setTotal(c.getItems().stream().mapToDouble(ln -> ln.getImporte()).sum());
-			carritoDao.save(c);
 		}
-
+		p.setStock(p.getStock() - cantidad);
+		productoDao.save(p);
+		c.setTotal(c.getItems().stream().mapToDouble(ln -> ln.getImporte()).sum());
+		carritoDao.save(c);
 		return c;
 	}
 
 	@Override
-	public Carrito quitarItem(int idUsuario, int item) {
+	public Carrito quitarItem(int idUsuario, int idProducto) {
 		Carrito c = carritoDao.findByUsuario(idUsuario);
-		Optional<ItemCarrito> itemAQuitar = c.getItems().stream().filter(i -> i.getId() == item).findFirst();
+		Optional<ItemCarrito> itemToRemove = c.getItems().stream()
+				.filter(item -> item.getProducto().getId() == idProducto).findFirst();
 
-		if (itemAQuitar.isPresent()) {
-			c.getItems().remove(itemAQuitar.get());
-			itemCarritoDao.deleteById(itemAQuitar.get().getId());
+		if (itemToRemove.isPresent()) {
+			ItemCarrito itemToBeRemoved = itemToRemove.get();
+			Producto producto = itemToBeRemoved.getProducto();
+			c.getItems().remove(itemToRemove.get());
+			producto.setStock(producto.getStock() + itemToBeRemoved.getCantidad());
+			productoDao.save(producto);
+			itemCarritoDao.deleteById(itemToRemove.get().getId());
+			c.setTotal(c.getItems().stream().mapToDouble(ItemCarrito::getImporte).sum());
 			carritoDao.save(c);
 		}
-		c.setTotal(c.getItems().stream().mapToDouble(ln -> ln.getImporte()).sum());
 		return c;
 	}
-
-	/*
-	 * @Override public Carrito quitarItem(int idUsuario, int item) { Carrito c =
-	 * carritoDao.findByUsuario(idUsuario); ItemCarrito itemAQuitar =
-	 * c.getItems().get(item);
-	 * 
-	 * if (itemAQuitar != null) { c.getItems().remove(itemAQuitar);
-	 * itemCarritoDao.deleteById(itemAQuitar.getId()); carritoDao.save(c); }
-	 * c.setTotal(c.getItems().stream().mapToDouble(ln -> ln.getImporte()).sum());
-	 * return c; }
-	 */
 
 	@Override
 	public Carrito vaciarCarrito(int idUsuario) {
@@ -118,7 +117,7 @@ public class CarritoServiceImp implements ICarritoService {
 	@Override
 	public List<ItemCarrito> getItems(int idUsuario) {
 		// TODO Auto-generated method stub
-		return null;
+		return new ArrayList<>();
 	}
 
 	@Override

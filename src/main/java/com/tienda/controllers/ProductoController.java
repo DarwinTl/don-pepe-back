@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.dao.DataAccessException;
@@ -40,11 +39,14 @@ import com.tienda.services.UploadFileService;
 @RequestMapping("/api/mantenimiento/productos")
 public class ProductoController {
 
-	@Autowired
 	private IProductoService productoService;
 
-	@Autowired
 	private UploadFileService uploadFileService;
+
+	public ProductoController(IProductoService productoService, UploadFileService uploadFileService) {
+		this.productoService = productoService;
+		this.uploadFileService = uploadFileService;
+	}
 
 	@GetMapping()
 	public List<Producto> findAll() {
@@ -64,7 +66,7 @@ public class ProductoController {
 
 	@GetMapping("/{id}")
 	public ResponseEntity<?> find(@PathVariable int id) {
-		Optional<Producto> producto = null;
+		Optional<Producto> producto;
 		Map<String, Object> response = new HashMap<>();
 
 		try {
@@ -290,7 +292,7 @@ public class ProductoController {
 	}
 
 	@PutMapping("/add-stock/{id}")
-	public ResponseEntity<Map<String, Object>> actualizarStock(@PathVariable int id, @RequestParam  int cantidad) {
+	public ResponseEntity<Map<String, Object>> actualizarStock(@PathVariable int id, @RequestParam int cantidad) {
 		Optional<Producto> optionalProducto = productoService.findById(id);
 		Map<String, Object> response = new HashMap<>();
 		Producto p = null;
@@ -303,7 +305,7 @@ public class ProductoController {
 		try {
 
 			p = optionalProducto.get();
-			p.setStock(p.getStock()+cantidad );
+			p.setStock(p.getStock() + cantidad);
 			productoService.save(p);
 		} catch (DataAccessException e) {
 		}

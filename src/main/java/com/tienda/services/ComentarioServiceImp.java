@@ -2,7 +2,6 @@ package com.tienda.services;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.tienda.entities.Comentario;
@@ -15,14 +14,17 @@ import com.tienda.repositories.IUsuarioDao;
 @Service
 public class ComentarioServiceImp implements IComentarioService {
 
-	@Autowired
 	private IComentarioDao comentarioDao;
 
-	@Autowired
 	private IProductoDao productoDao;
 
-	@Autowired
 	private IUsuarioDao usuarioDao;
+
+	public ComentarioServiceImp(IComentarioDao comentarioDao, IProductoDao productoDao, IUsuarioDao usuarioDao) {
+		this.comentarioDao = comentarioDao;
+		this.productoDao = productoDao;
+		this.usuarioDao = usuarioDao;
+	}
 
 	@Override
 	public List<Comentario> getComentarios() {

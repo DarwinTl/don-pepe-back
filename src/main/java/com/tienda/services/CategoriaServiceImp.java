@@ -13,9 +13,16 @@ import com.tienda.repositories.ICategoriaDao;
 
 @Service
 public class CategoriaServiceImp implements ICategoriaService {
-
 	@Autowired
 	private ICategoriaDao categoriaDao;
+
+	public ICategoriaDao getCategoriaDao() {
+		return categoriaDao;
+	}
+
+	public void setCategoriaDao(ICategoriaDao categoriaDao) {
+		this.categoriaDao = categoriaDao;
+	}
 
 	@Override
 	public List<Categoria> findAll() {

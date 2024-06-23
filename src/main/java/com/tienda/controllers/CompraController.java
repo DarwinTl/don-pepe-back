@@ -2,6 +2,7 @@ package com.tienda.controllers;
 
 import java.util.Optional;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.tienda.entities.Carrito;
+import com.tienda.entities.Orden;
 import com.tienda.entities.Usuario;
 import com.tienda.repositories.IUsuarioDao;
 import com.tienda.services.ICarritoService;
@@ -50,12 +52,18 @@ public class CompraController {
 	@PostMapping("/add/producto/{idProducto}")
 	public ResponseEntity<Object> agregarItem(@RequestParam int userId, @PathVariable int idProducto,
 			@RequestParam int cantidad) {
-		Optional<Usuario> u = usuarioDao.findById(userId);
-		if (u.isEmpty()) {
-			return ResponseEntity.badRequest().body("Inicia sesion");
+
+		try {
+			Optional<Usuario> u = usuarioDao.findById(userId);
+			if (u.isEmpty()) {
+				return ResponseEntity.badRequest().body("Inicia sesion");
+			}
+
+			return ResponseEntity.ok(carritoService.agregarItem(u.get().getId(), idProducto, cantidad));
+		} catch (Exception e) {
+			return ResponseEntity.badRequest().body("El producto no tiene suficiente stock");
 		}
 
-		return ResponseEntity.ok(carritoService.agregarItem(u.get().getId(), idProducto, cantidad));
 	}
 
 	@GetMapping("/cantidad")
@@ -74,4 +82,11 @@ public class CompraController {
 
 		return ResponseEntity.ok(carritoService.vaciarCarrito(usuarioDao.findById(idUsuario).get().getId()));
 	}
+
+	@PostMapping("/comprar/{userId}")
+	public ResponseEntity<Orden> comprar(@PathVariable int userId) {
+		Orden orden = ventaService.compra(userId);
+		return new ResponseEntity<>(orden, HttpStatus.CREATED);
+	}
+
 }

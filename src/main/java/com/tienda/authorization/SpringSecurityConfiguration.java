@@ -2,7 +2,6 @@ package com.tienda.authorization;
 
 import java.util.Arrays;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -26,8 +25,11 @@ import com.tienda.authorization.filter.JwtValidationFilter;
 @Configuration
 public class SpringSecurityConfiguration {
 
-	@Autowired
 	private AuthenticationConfiguration authenticationConfiguration;
+
+	public SpringSecurityConfiguration(AuthenticationConfiguration authenticationConfiguration) {
+		this.authenticationConfiguration = authenticationConfiguration;
+	}
 
 	@Bean
 	AuthenticationManager authenticationManager() throws Exception {
@@ -65,7 +67,6 @@ public class SpringSecurityConfiguration {
 
 		CorsConfiguration config = new CorsConfiguration();
 		config.setAllowedOriginPatterns(Arrays.asList("*"));
-		//config.setAllowedOrigins(Arrays.asList("http://localhost:4200","https://www.voiceflow.com/"));
 		config.setAllowedMethods(Arrays.asList("POST", "GET", "PUT", "DELETE"));
 		config.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
 		config.setAllowCredentials(true);

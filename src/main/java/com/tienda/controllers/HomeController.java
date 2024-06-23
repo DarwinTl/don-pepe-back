@@ -6,12 +6,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,6 +30,9 @@ import com.tienda.entities.Producto;
 import com.tienda.entities.ProductoDTO;
 import com.tienda.entities.Usuario;
 import com.tienda.entities.listas.ListaMedidas;
+import com.tienda.mail.Email;
+import com.tienda.mail.JavaMailSenderService;
+import com.tienda.repositories.IProductoDao;
 import com.tienda.services.ICategoriaService;
 import com.tienda.services.IComentarioService;
 import com.tienda.services.IProductoService;
@@ -47,6 +52,8 @@ public class HomeController {
 	private IProductoService productoService;
 
 	private ICategoriaService categoriaService;
+	@Autowired
+	private JavaMailSenderService mailService;
 
 	public HomeController(IComentarioService comentarioService, IUsuarioService usuarioService,
 			IProductoService productoService, ICategoriaService categoriaService) {
@@ -62,8 +69,8 @@ public class HomeController {
 	}
 
 	@GetMapping("/producto/detalles/{id}")
-	public ResponseEntity<?> find(@PathVariable int id) {
-		Optional<Producto> producto = null;
+	public ResponseEntity<Object> find(@PathVariable int id) {
+		Optional<Producto> producto;
 		Map<String, Object> response = new HashMap<>();
 
 		try {
@@ -71,15 +78,15 @@ public class HomeController {
 		} catch (DataAccessException e) {
 			response.put("mensaje", "Error al realizar consulta en la BD");
 			response.put("error", e.getMessage() + " " + e.getMostSpecificCause().getMessage());
-			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+			return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
 		if (!producto.isPresent()) {
 			response.put("mensaje", "El producto con ID " + id + " no existe en la BD");
-			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
+			return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
 		}
 
-		return new ResponseEntity<Producto>(producto.get(), HttpStatus.OK);
+		return new ResponseEntity<>(producto.get(), HttpStatus.OK);
 	}
 
 	@GetMapping("/medidas")
@@ -98,7 +105,7 @@ public class HomeController {
 	}
 
 	@PostMapping("/registrar")
-	public ResponseEntity<?> cliente(@Valid @RequestBody Usuario usuario, BindingResult result) {
+	public ResponseEntity<Map<String, Object>> cliente(@Valid @RequestBody Usuario usuario, BindingResult result) {
 		Usuario usuarioNuevo = null;
 		Map<String, Object> response = new HashMap<>();
 
@@ -112,12 +119,12 @@ public class HomeController {
 		} catch (DataAccessException e) {
 			response.put("mensaje", "Error al realizar consulta en la BD");
 			response.put("error", e.getMessage() + " " + e.getMostSpecificCause().getMessage());
-			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+			return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		response.put("mensaje", "Cuenta creada Correctamente");
 		response.put("usuario", usuarioNuevo);
 
-		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
+		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 
 	@GetMapping("/users")
@@ -126,7 +133,7 @@ public class HomeController {
 	}
 
 	@GetMapping("/categorias/{categoria}")
-	public ResponseEntity<?> categorizar(@PathVariable int categoria) {
+	public ResponseEntity<Object> categorizar(@PathVariable int categoria) {
 		List<Producto> productos = productoService.getProductos(categoria);
 		if (productos.isEmpty()) {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -137,7 +144,7 @@ public class HomeController {
 	}
 
 	@GetMapping("/marcas/{marca}")
-	public ResponseEntity<?> marcas(@PathVariable int marca) {
+	public ResponseEntity<Object> marcas(@PathVariable int marca) {
 		List<Producto> productos = productoService.getProductosMarca(marca);
 		if (productos.isEmpty()) {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -153,7 +160,7 @@ public class HomeController {
 		return productoService.findAll(PageRequest.of(page, num));
 	}
 
-	private ResponseEntity<?> validation(BindingResult result) {
+	private ResponseEntity<Map<String, Object>> validation(BindingResult result) {
 		Map<String, Object> errors = new HashMap<>();
 
 		result.getFieldErrors().forEach(error -> {
@@ -175,7 +182,7 @@ public class HomeController {
 	}
 
 	@GetMapping("/names")
-	public ResponseEntity<?> getProductNames() {
+	public ResponseEntity<Object> getProductNames() {
 
 		return ResponseEntity.ok(productoService.getProductos());
 	}
@@ -213,6 +220,9 @@ public class HomeController {
 			productoDTO.setMarca(producto.getMarca().getNombre());
 			productoDTO.setPrecio(producto.getPrecioVenta());
 			productoDTO.setDescripcion(producto.getDescripcion());
+			String url = "https://6f5a-190-12-77-20.ngrok-free.app/api/mantenimiento/productos/img/"
+					+ producto.getRuta();
+			productoDTO.setUrl(url);
 			pd.add(productoDTO);
 		}
 
@@ -222,10 +232,25 @@ public class HomeController {
 					.append(", ").append("stock: ").append(producto.getStock()).append(", ").append("categoria: ")
 					.append(producto.getCategoria()).append(", ").append("marca: ").append(producto.getMarca())
 					.append(", ").append("precio: ").append(producto.getPrecio()).append(", ").append("descripcion: ")
-					.append(producto.getDescripcion()).append("    ");
+					.append(producto.getDescripcion()).append("url: ").append(producto.getUrl()).append("    ");
 		}
 		response.put("productos", sb.toString());
 		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@Autowired
+	private IProductoDao productoDao;
+
+	@GetMapping("/reco/{id}")
+	public List<Object[]> getMethodName(@PathVariable int id) {
+		return productoDao.getQuantityByProduct(id);
+	}
+
+	@PostMapping("/send")
+	public String send(@RequestBody Email mail) {
+		mailService.enviarCorreo(mail);
+
+		return "Correo enviado";
 	}
 
 }

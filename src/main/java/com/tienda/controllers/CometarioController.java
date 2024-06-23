@@ -1,6 +1,5 @@
 package com.tienda.controllers;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,8 +17,11 @@ import com.tienda.services.IComentarioService;
 @RequestMapping("/api/usuario")
 public class CometarioController {
 
-	@Autowired
 	private IComentarioService comentarioService;
+
+	public CometarioController(IComentarioService comentarioService) {
+		this.comentarioService = comentarioService;
+	}
 
 	@PostMapping("/{idProducto}/comentario/{correo}")
 	public ResponseEntity<Comentario> comentar(@PathVariable int idProducto, @PathVariable String correo,

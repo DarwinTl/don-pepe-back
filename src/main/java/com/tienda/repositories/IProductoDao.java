@@ -13,12 +13,16 @@ import com.tienda.entities.Producto;
 public interface IProductoDao extends JpaRepository<Producto, Integer> {
 
 	@Query("select  p from Producto p where p.categoria.id=?1")
-	List<Producto> listByCategoria(int categoria); 
+	List<Producto> listByCategoria(int categoria);
 
 	@Query("select  p from Producto p where p.marca.id=?1")
-	List<Producto> listByMarca(int marca); 
-	
-	
+	List<Producto> listByMarca(int marca);
+
 	@Query("select  p from Producto p where p.nombre like %:texto%")
-	List<Producto> buscar(@Param("texto") String  texto); 
+	List<Producto> buscar(@Param("texto") String texto);
+
+	@Query("SELECT  SUM(d.cantidad) AS cantidad_por_producto, d.producto.id, p.nombre " + "FROM DetalleOrden d "
+			+ "JOIN d.orden o " + "JOIN d.producto p " + "WHERE o.usuario.id = :usuarioId " + "GROUP BY d.producto.id "
+			+ "ORDER BY cantidad_por_producto DESC")
+	List<Object[]> getQuantityByProduct(@Param("usuarioId") int id);
 }

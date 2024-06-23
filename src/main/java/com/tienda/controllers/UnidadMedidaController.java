@@ -64,7 +64,7 @@ public class UnidadMedidaController {
 	}
 
 	@PostMapping()
-	public ResponseEntity<?> save(@RequestBody UnidadMedida medida) {
+	public ResponseEntity<Map<String, Object>> save(@RequestBody UnidadMedida medida) {
 		UnidadMedida medidaNueva = null;
 		Map<String, Object> response = new HashMap<>();
 
@@ -73,12 +73,12 @@ public class UnidadMedidaController {
 		} catch (DataAccessException e) {
 			response.put("mensaje", "Error al realizar consulta en la BD");
 			response.put("error", e.getMessage() + " " + e.getMostSpecificCause().getMessage());
-			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+			return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		response.put("mensaje", "Unidadad de medida creada con exito");
 		response.put("unidad", medidaNueva);
 
-		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
+		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 
 	@PutMapping("/{id}")
@@ -115,7 +115,7 @@ public class UnidadMedidaController {
 
 		if (medida == null) {
 			response.put("mensaje", "La categoria con ID " + id + " no existe en la BD");
-			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
+			return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
 		}
 
 		try {
@@ -123,11 +123,11 @@ public class UnidadMedidaController {
 		} catch (DataAccessException e) {
 			response.put("mensaje", "Error al realizar consulta en la BD");
 			response.put("error", e.getMessage() + " " + e.getMostSpecificCause().getMessage());
-			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+			return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		response.put("mensaje", "Unidad de medida eliminada");
 
-		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
+		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
 }

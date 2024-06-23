@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -18,8 +17,11 @@ import com.tienda.repositories.IUsuarioDao;
 @Service
 public class JpaUserDetailsService implements UserDetailsService {
 
-	@Autowired
 	private IUsuarioDao usuarioDao;
+
+	public JpaUserDetailsService(IUsuarioDao usuarioDao) {
+		this.usuarioDao = usuarioDao;
+	}
 
 	@Override
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -34,8 +36,6 @@ public class JpaUserDetailsService implements UserDetailsService {
 		List<GrantedAuthority> authorities = usuario.getRoles().stream()
 				.map(rol -> new SimpleGrantedAuthority(rol.getNombre())).collect(Collectors.toList());
 
-		// return new User(username, usuario.getPassword(), true, true, true, true,
-		// authorities);
 		return new com.tienda.services.UserDetails(username, usuario.getPassword(), true, true, true, true, authorities,
 				usuario.getId(), usuario.getNombres().concat(" ").concat(usuario.getApellidoPaterno()));
 	}

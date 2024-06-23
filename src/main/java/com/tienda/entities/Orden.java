@@ -9,7 +9,10 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
 
 @Entity()
 @Table(name = "ordenes")
@@ -18,11 +21,11 @@ public class Orden {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id;
-
+	@Temporal(TemporalType.DATE)
 	private Date fechaVenta;
 
 	private String estado;
-
+	@Temporal(TemporalType.TIME)
 	private Date horaVenta;
 
 	private String numeroBoleta;
@@ -150,6 +153,17 @@ public class Orden {
 	}
 
 	public Orden() {
+
+	}
+
+	@PrePersist
+	public void onCreate() {
+		this.fechaVenta = new Date();
+		this.horaVenta = new Date();
+
+		igv = 0.18 * total;
+		subTotal = total - igv;
+		descuento = 0;
 
 	}
 

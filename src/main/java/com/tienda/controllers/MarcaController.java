@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -24,27 +23,31 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.tienda.entities.Marca;
 import com.tienda.services.IMarcaService;
+
 @CrossOrigin(origins = "http://localhost:4200")
 @RestController
 @RequestMapping("/api/mantenimiento/marcas")
 public class MarcaController {
 
-	@Autowired
 	private IMarcaService marcaService;
+
+	public MarcaController(IMarcaService marcaService) {
+		this.marcaService = marcaService;
+	}
 
 	@GetMapping()
 	public List<Marca> getMarcas() {
 		return marcaService.getMarcas();
 	}
-	
+
 	@GetMapping("/pagina")
-	public Page<Marca> listar(@RequestParam(defaultValue = "0") int page,@RequestParam(defaultValue = "5") int num) {
+	public Page<Marca> listar(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "5") int num) {
 		return marcaService.findAll(PageRequest.of(page, num));
 	}
 
 	@GetMapping("/{id}")
 	public ResponseEntity<?> findMarca(@PathVariable int id) {
-		Optional<Marca> marca = null;
+		Optional<Marca> marca;
 		Map<String, Object> response = new HashMap<>();
 
 		try {

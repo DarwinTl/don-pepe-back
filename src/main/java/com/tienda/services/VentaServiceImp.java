@@ -1,20 +1,52 @@
 package com.tienda.services;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.tienda.entities.Carrito;
+import com.tienda.entities.DetalleOrden;
+import com.tienda.entities.ItemCarrito;
 import com.tienda.entities.Orden;
+import com.tienda.entities.Usuario;
+import com.tienda.mail.Email;
+import com.tienda.mail.JavaMailSenderService;
+import com.tienda.repositories.ICarritoDao;
+import com.tienda.repositories.IItemCarritoDao;
+import com.tienda.repositories.IOrdenDao;
+import com.tienda.repositories.IOrdenDetallesDao;
+import com.tienda.repositories.IUsuarioDao;
 import com.tienda.repositories.IVentaDao;
 
 @Service
 public class VentaServiceImp implements IVentaService {
 
+	private IUsuarioDao usuarioDao;
+
 	private IVentaDao ventaDao;
 
-	public VentaServiceImp(IVentaDao ventaDao) {
+	private IOrdenDao ordenDao;
+
+	private ICarritoDao carritoDao;
+
+	private IItemCarritoDao iItemCarritoDao;
+
+	private IOrdenDetallesDao ordenDetallesDao;
+
+	private JavaMailSenderService mailSender;
+
+	public VentaServiceImp(IVentaDao ventaDao, ICarritoDao carritoDao, IItemCarritoDao iItemCarritoDao,
+			IOrdenDao ordenDao, IOrdenDetallesDao ordenDetallesDao, IUsuarioDao usuarioDao,
+			JavaMailSenderService mailSender) {
 		this.ventaDao = ventaDao;
+		this.carritoDao = carritoDao;
+		this.iItemCarritoDao = iItemCarritoDao;
+		this.ordenDao = ordenDao;
+		this.mailSender = mailSender;
+		this.ordenDetallesDao = ordenDetallesDao;
+		this.usuarioDao = usuarioDao;
 	}
 
 	@Override
@@ -25,7 +57,7 @@ public class VentaServiceImp implements IVentaService {
 		List<Orden> ordenes = findAllVentas();
 		List<Long> numerosBoleta = new ArrayList<>();
 
-		ordenes.stream().forEach(o -> numerosBoleta.add(Long.valueOf(o.getNumeroBoleta())));
+		ordenes.stream().forEach(o -> numerosBoleta.add(Long.valueOf(o.getId())));
 
 		if (ordenes.isEmpty()) {
 			num = 1;
@@ -52,6 +84,45 @@ public class VentaServiceImp implements IVentaService {
 	@Override
 	public List<Orden> findAllVentas() {
 		return ventaDao.findAll();
+	}
+
+	@Override
+	public Orden compra(int userId) {
+
+		Carrito c = carritoDao.findByUsuario(userId);
+		Usuario u = usuarioDao.findById(userId).get();
+
+		Orden orden = new Orden();
+		List<DetalleOrden> detalles = new ArrayList<>();
+
+		orden.setTotal(c.getTotal());
+		orden.setNumeroBoleta(generarNumVenta());
+		orden.setUsuario(u);
+		DecimalFormat df = new DecimalFormat("#.00");
+		orden.setIgv(Double.parseDouble(df.format(orden.getIgv())));
+		orden = ordenDao.save(orden);
+		for (ItemCarrito itemCarrito : c.getItems()) {
+			DetalleOrden dt = new DetalleOrden();
+			dt.setCantidad(itemCarrito.getCantidad());
+			dt.setImporte(itemCarrito.getImporte());
+			dt.setProducto(itemCarrito.getProducto());
+			dt.setOrden(orden);
+			detalles.add(dt);
+		}
+		ordenDetallesDao.saveAll(detalles);
+		// para enviar el correo
+		Email mail = new Email();
+		mail.setTo(u.getCorreo());
+		mail.setSubject("Orden de Compra");
+		mail.setBody("Tu orden nº " + generarNumVenta() + " ha sido recibida");
+		mailSender.enviarCorreo(mail);
+
+		c.setItems(new ArrayList<>());
+		iItemCarritoDao.deleteAllByCarritoId((long) c.getId());
+		c.setTotal(0);
+		carritoDao.save(c);
+
+		return orden;
 	}
 
 }

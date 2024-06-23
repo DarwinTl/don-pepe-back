@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -33,8 +32,11 @@ import jakarta.validation.Valid;
 @RequestMapping("/api/mantenimiento/categorias")
 public class CategoriaController {
 
-	@Autowired
 	private ICategoriaService categoriaService;
+
+	public CategoriaController(ICategoriaService categoriaService) {
+		this.categoriaService = categoriaService;
+	}
 
 	@GetMapping()
 	public List<Categoria> getCategorias() {
@@ -42,32 +44,33 @@ public class CategoriaController {
 	}
 
 	@GetMapping("/pagina")
-	public Page<Categoria> listar(@RequestParam(defaultValue = "0") int page,@RequestParam(defaultValue = "2") int num) {
+	public Page<Categoria> listar(@RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "2") int num) {
 		return categoriaService.findAll(PageRequest.of(page, num));
 	}
 
 	@GetMapping("/{id}")
-	public ResponseEntity<?> find(@PathVariable int id) {
-		Optional<Categoria> categoria = null;
+	public ResponseEntity<Object> find(@PathVariable int id) {
+		Optional<Categoria> categoria;
 		Map<String, Object> response = new HashMap<>();
 		try {
 			categoria = categoriaService.findById(id);
 		} catch (DataAccessException e) {
 			response.put("mensaje", "Error al realizar consulta en la BD");
 			response.put("error", e.getMessage() + " " + e.getMostSpecificCause().getMessage());
-			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+			return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
 		if (!categoria.isPresent()) {
-			response.put("mensaje", "La categoria con ID " + id + " no existe en la BD");
-			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
+			response.put("mensaje", String.format("La categoria con el el ID %s no existe", id));
+			return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
 		}
 
-		return new ResponseEntity<Categoria>(categoria.get(), HttpStatus.OK);
+		return new ResponseEntity<>(categoria.get(), HttpStatus.OK);
 	}
 
 	@PostMapping()
-	public ResponseEntity<?> save(@Valid @RequestBody Categoria categoria, BindingResult result) {
+	public ResponseEntity<Map<String, Object>> save(@Valid @RequestBody Categoria categoria, BindingResult result) {
 		Categoria categoriaNueva = null;
 		Map<String, Object> response = new HashMap<>();
 
@@ -80,17 +83,17 @@ public class CategoriaController {
 		} catch (DataAccessException e) {
 			response.put("mensaje", "Error al realizar consulta en la BD");
 			response.put("error", e.getMessage() + " " + e.getMostSpecificCause().getMessage());
-			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+			return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
 		response.put("mensaje", "Categoría creada con exito");
 		response.put("categoria", categoriaNueva);
 
-		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
+		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 
 	@PutMapping("/{id}")
-	public ResponseEntity<?> update(@Valid @RequestBody Categoria categoria, BindingResult result,
+	public ResponseEntity<Map<String, Object>> update(@Valid @RequestBody Categoria categoria, BindingResult result,
 			@PathVariable int id) {
 
 		Optional<Categoria> optionalActual = categoriaService.findById(id);
@@ -104,7 +107,7 @@ public class CategoriaController {
 
 		if (!optionalActual.isPresent()) {
 			response.put("mensaje", "La categoria con ID " + id + " no existe en la BD");
-			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
+			return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
 		}
 		try {
 			categoriaActual = optionalActual.get();
@@ -113,22 +116,22 @@ public class CategoriaController {
 		} catch (DataAccessException e) {
 			response.put("mensaje", "Error al realizar consulta en la BD");
 			response.put("error", e.getMessage() + " " + e.getMostSpecificCause().getMessage());
-			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+			return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		response.put("mensaje", "Categoria actualizada con exito");
 		response.put("categoria", categoriaNueva);
 
-		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
+		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 
 	@DeleteMapping("/{id}")
-	public ResponseEntity<?> delete(@PathVariable int id) {
+	public ResponseEntity<Map<String, Object>> delete(@PathVariable int id) {
 		Optional<Categoria> categoria = categoriaService.findById(id);
 		Map<String, Object> response = new HashMap<>();
 
 		if (!categoria.isPresent()) {
 			response.put("mensaje", "La categoria con ID " + id + " no existe en la BD");
-			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
+			return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
 		}
 
 		try {
@@ -136,19 +139,18 @@ public class CategoriaController {
 		} catch (DataAccessException e) {
 			response.put("mensaje", "Error al realizar consulta en la BD");
 			response.put("error", e.getMessage() + " " + e.getMostSpecificCause().getMessage());
-			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+			return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		response.put("mensaje", "Categoria eliminada");
 
-		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
+		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	private ResponseEntity<?> validation(BindingResult result) {
+	private ResponseEntity<Map<String, Object>> validation(BindingResult result) {
 		Map<String, Object> errors = new HashMap<>();
 
-		result.getFieldErrors().forEach(error -> {
-			errors.put(error.getField(), "El campo " + error.getField() + " " + error.getDefaultMessage());
-		});
+		result.getFieldErrors().forEach(error -> errors.put(error.getField(),
+				"El campo " + error.getField() + " " + error.getDefaultMessage()));
 		return ResponseEntity.badRequest().body(errors);
 
 	}

@@ -3,7 +3,6 @@ package com.tienda.services;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -14,8 +13,11 @@ import com.tienda.repositories.IMarcaDao;
 @Service
 public class MarcaServiceImp implements IMarcaService {
 
-	@Autowired
 	private IMarcaDao marcaDao;
+
+	public MarcaServiceImp(IMarcaDao marcaDao) {
+		this.marcaDao = marcaDao;
+	}
 
 	@Override
 	public List<Marca> getMarcas() {

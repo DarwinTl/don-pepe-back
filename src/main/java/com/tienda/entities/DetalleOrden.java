@@ -8,19 +8,18 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name="detalles_ordenes")
+@Table(name = "detalles_ordenes")
 public class DetalleOrden {
-	
-	
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id;
-	
+
 	@ManyToOne
 	private Producto producto;
-	
+
 	private int cantidad;
-	
+
 	private double importe;
 
 	@ManyToOne
@@ -66,6 +65,9 @@ public class DetalleOrden {
 		this.orden = orden;
 	}
 
+	public DetalleOrden() {
+	}
+
 	public DetalleOrden(int id, Producto producto, int cantidad, double importe, Orden orden) {
 		this.id = id;
 		this.producto = producto;
@@ -73,12 +75,5 @@ public class DetalleOrden {
 		this.importe = importe;
 		this.orden = orden;
 	}
-	
-	
-	
-	
-	
-	
-	
-	
+
 }

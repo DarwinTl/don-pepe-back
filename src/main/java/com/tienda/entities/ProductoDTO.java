@@ -9,6 +9,7 @@ public class ProductoDTO {
 	private String marca;
 	private double precio;
 	private String descripcion;
+	private String url;
 
 	public Long getId() {
 		return id;
@@ -66,8 +67,16 @@ public class ProductoDTO {
 		this.descripcion = descripcion;
 	}
 
+	public String getUrl() {
+		return url;
+	}
+
+	public void setUrl(String url) {
+		this.url = url;
+	}
+
 	public ProductoDTO(Long id, String nombre, int stock, String categoria, String marca, double precio,
-			String descripcion) {
+			String descripcion, String url) {
 		this.id = id;
 		this.nombre = nombre;
 		this.stock = stock;
@@ -75,6 +84,7 @@ public class ProductoDTO {
 		this.marca = marca;
 		this.precio = precio;
 		this.descripcion = descripcion;
+		this.url = url;
 	}
 
 	public ProductoDTO() {
