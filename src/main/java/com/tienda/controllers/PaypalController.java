@@ -55,8 +55,8 @@ public class PaypalController {
 
 		Payment payment = paypalService.executePayment(paymentId, payerId);
 		if (payment.getState().equals("approved")) {
-			// esta sera la ruta en el fron para el success
-			return new RedirectView("http:localhost:4200/payment/success");
+			
+			return new RedirectView("http:localhost:4200");
 		}
 
 		return null;

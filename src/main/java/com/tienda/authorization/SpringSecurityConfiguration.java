@@ -54,6 +54,7 @@ public class SpringSecurityConfiguration {
 						.requestMatchers(HttpMethod.POST, "/api/mantenimiento/**").hasRole("ADMIN")
 						.requestMatchers(HttpMethod.PUT, "/api/mantenimiento/**").hasRole("ADMIN")
 						.requestMatchers(HttpMethod.DELETE, "/api/mantenimiento/**").hasRole("ADMIN")
+						.requestMatchers(HttpMethod.GET, "/api/ordenes/**").hasRole("PICKER")
 						.requestMatchers(HttpMethod.POST, "/api/usuario/**").hasRole("USER").anyRequest()
 						.authenticated())
 				.cors(cors -> cors.configurationSource(configurationSource()))

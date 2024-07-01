@@ -21,8 +21,12 @@ public interface IProductoDao extends JpaRepository<Producto, Integer> {
 	@Query("select  p from Producto p where p.nombre like %:texto%")
 	List<Producto> buscar(@Param("texto") String texto);
 
-	@Query("SELECT  SUM(d.cantidad) AS cantidad_por_producto, d.producto.id, p.nombre " + "FROM DetalleOrden d "
-			+ "JOIN d.orden o " + "JOIN d.producto p " + "WHERE o.usuario.id = :usuarioId " + "GROUP BY d.producto.id "
-			+ "ORDER BY cantidad_por_producto DESC")
-	List<Object[]> getQuantityByProduct(@Param("usuarioId") int id);
+	@Query("SELECT d.producto.id " + "FROM DetalleOrden d " + "JOIN d.orden o " + "JOIN d.producto p "
+			+ "WHERE o.usuario.id = :usuarioId " + "GROUP BY d.producto.id "
+			+ "ORDER BY (SELECT SUM(cantidad) FROM DetalleOrden WHERE producto.id = d.producto.id) DESC limit 5")
+	List<Integer> getQuantityByProduct(@Param("usuarioId") int id);
+
+	@Query("SELECT p " + "FROM Producto p " + "WHERE p.id IN :productIds")
+	List<Producto> findProductsByIds(@Param("productIds") List<Integer> productIds);
+
 }

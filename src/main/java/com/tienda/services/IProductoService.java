@@ -17,12 +17,14 @@ public interface IProductoService {
 	public Optional<Producto> findById(int id);
 
 	public void deleteById(int id);
-	
+
 	public List<Producto> getProductos(int categoria);
-	
+
 	public List<Producto> getProductosMarca(int marca);
-	
+
 	public Page<Producto> findAll(Pageable pageable);
 
 	public List<Producto> buscar(String texto);
+
+	List<Producto> masComprados(int usuarioId);
 }

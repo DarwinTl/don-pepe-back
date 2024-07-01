@@ -21,6 +21,8 @@ import com.tienda.repositories.IUsuarioDao;
 import com.tienda.services.ICarritoService;
 import com.tienda.services.IVentaService;
 
+import jakarta.mail.MessagingException;
+
 @CrossOrigin(origins = "http://localhost:4200")
 @RestController
 @RequestMapping("/api/home")
@@ -84,8 +86,11 @@ public class CompraController {
 	}
 
 	@PostMapping("/comprar/{userId}")
-	public ResponseEntity<Orden> comprar(@PathVariable int userId) {
+	public ResponseEntity<Object> comprar(@PathVariable int userId) throws MessagingException {
 		Orden orden = ventaService.compra(userId);
+		if (orden == null) {
+			return ResponseEntity.badRequest().body("Añade productos a tu carrito");
+		}
 		return new ResponseEntity<>(orden, HttpStatus.CREATED);
 	}
 

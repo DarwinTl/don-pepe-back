@@ -1,5 +1,7 @@
 package com.tienda.entities;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -23,6 +25,7 @@ public class DetalleOrden {
 	private double importe;
 
 	@ManyToOne
+	@JsonBackReference
 	private Orden orden;
 
 	public int getId() {

@@ -3,6 +3,8 @@ package com.tienda.entities;
 import java.util.Date;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -43,6 +45,7 @@ public class Orden {
 	private int tipoDocumento;
 
 	@OneToMany(mappedBy = "orden")
+	@JsonManagedReference
 	private List<DetalleOrden> detalles;
 
 	@ManyToOne

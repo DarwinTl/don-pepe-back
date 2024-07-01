@@ -60,4 +60,10 @@ public class ProductoServiceImp implements IProductoService {
 		return productoDao.buscar(texto);
 	}
 
+	@Override
+	public List<Producto> masComprados(int usuarioId) {
+		List<Integer> ids = productoDao.getQuantityByProduct(usuarioId);
+		return productoDao.findProductsByIds(ids);
+	}
+
 }

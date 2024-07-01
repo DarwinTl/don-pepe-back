@@ -12,8 +12,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -38,6 +36,7 @@ import com.tienda.services.IComentarioService;
 import com.tienda.services.IProductoService;
 import com.tienda.services.IUsuarioService;
 
+import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
 
 @CrossOrigin(origins = "https://www.voiceflow.com/")
@@ -52,15 +51,16 @@ public class HomeController {
 	private IProductoService productoService;
 
 	private ICategoriaService categoriaService;
-	@Autowired
+
 	private JavaMailSenderService mailService;
 
 	public HomeController(IComentarioService comentarioService, IUsuarioService usuarioService,
-			IProductoService productoService, ICategoriaService categoriaService) {
+			IProductoService productoService, ICategoriaService categoriaService, JavaMailSenderService mailService) {
 		this.comentarioService = comentarioService;
 		this.usuarioService = usuarioService;
 		this.productoService = productoService;
 		this.categoriaService = categoriaService;
+		this.mailService = mailService;
 	}
 
 	@GetMapping()
@@ -200,6 +200,9 @@ public class HomeController {
 			productoDTO.setCategoria(producto.getCategoria().getNombre());
 			productoDTO.setMarca(producto.getMarca().getNombre());
 			productoDTO.setPrecio(producto.getPrecioVenta());
+			String url = "https://picked-pleasantly-quetzal.ngrok-free.app/api/mantenimiento/productos/img/"
+					+ producto.getRuta();
+			productoDTO.setUrl(url);
 			pd.add(productoDTO);
 		}
 
@@ -220,7 +223,7 @@ public class HomeController {
 			productoDTO.setMarca(producto.getMarca().getNombre());
 			productoDTO.setPrecio(producto.getPrecioVenta());
 			productoDTO.setDescripcion(producto.getDescripcion());
-			String url = "https://6f5a-190-12-77-20.ngrok-free.app/api/mantenimiento/productos/img/"
+			String url = "https://picked-pleasantly-quetzal.ngrok-free.app/api/mantenimiento/productos/img/"
 					+ producto.getRuta();
 			productoDTO.setUrl(url);
 			pd.add(productoDTO);
@@ -232,23 +235,21 @@ public class HomeController {
 					.append(", ").append("stock: ").append(producto.getStock()).append(", ").append("categoria: ")
 					.append(producto.getCategoria()).append(", ").append("marca: ").append(producto.getMarca())
 					.append(", ").append("precio: ").append(producto.getPrecio()).append(", ").append("descripcion: ")
-					.append(producto.getDescripcion()).append("url: ").append(producto.getUrl()).append("    ");
+					.append(producto.getDescripcion()).append(", ").append("url: ").append(producto.getUrl())
+					.append("    ");
 		}
 		response.put("productos", sb.toString());
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@Autowired
-	private IProductoDao productoDao;
-
 	@GetMapping("/reco/{id}")
-	public List<Object[]> getMethodName(@PathVariable int id) {
-		return productoDao.getQuantityByProduct(id);
+	public List<Producto> getMethodName(@PathVariable int id) {
+		return productoService.masComprados(id);
 	}
 
 	@PostMapping("/send")
-	public String send(@RequestBody Email mail) {
-		mailService.enviarCorreo(mail);
+	public String send(@RequestBody Email mail) throws MessagingException {
+		mailService.enviarCorreo1(mail);
 
 		return "Correo enviado";
 	}
