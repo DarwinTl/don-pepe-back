@@ -16,7 +16,12 @@ public interface IOrdenService {
 
 	public List<Orden> listByEstado(String estado);
 
-	public void aprobarPago(String numero) throws MessagingException;
-	
-	public void listaEntregar(String numero);
+	public Orden listaEntregar(String numero) throws MessagingException;
+
+	public Orden aprobarPago(String numero) throws MessagingException;
+
+	public Orden entregar(String numero) throws MessagingException;
+
+	public List<Orden> findByDni(String dni);
+
 }

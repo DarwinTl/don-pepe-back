@@ -17,7 +17,20 @@
 				Don Pepe</h5>
 
 			<div style="padding: 1rem;">
-				<h1 style="text-align: center; color: #023e8a;">Tu pedido fue <span th:text="${estado}"></span></h1>
+
+				<!--Estado del pedido-->
+				<div th:switch="${estado}">
+					<h1 th:case="'Corroborando pago'" style="text-align: center; color: #023e8a;">Tu pedido fue recibido
+					</h1>
+					<h1 th:case="'confirmado'" style="text-align: center; color: #023e8a;">Tu pedido fue aprobado
+					</h1>
+					<h1 th:case="'lista para entregar'" style="text-align: center; color: #023e8a;">Tu pedido está listo
+						para recoger
+					</h1>
+					<h1 th:case="'entregada'" style="text-align: center; color: #023e8a;">Tu pedido ha sido
+						entregado
+					</h1>
+				</div>
 				<hr>
 				<h2 style="color: #14213d; text-align: center;" th:text="'Hola, ' + ${nombre} "></h2>
 				<p th:if="${estado == 'Corroborando pago'}">
@@ -29,19 +42,36 @@
 					Te confirmamos que tu pedido <span th:text="${numero}"></span> ha sido aprobado se procederá a
 					preparar tu orden.
 				</p>
-				<h4 style="text-align: center;">Estado de tu pedido</h4>
+				<p th:if="${estado == 'lista para entregar'}">
+					Queremos contarte que tu pedido <span th:text="${numero}"></span> está listo para recoger.
+
+				</p>
+
+				<p th:if="${estado == 'entregada'}">
+					Queremos contarte que tu pedido <span th:text="${numero}"></span> ha sido entregado.
+				<h2>Gracias por tu compra</h2>
+				</p>
 
 
 				<div th:switch="${estado}">
 					<!-- paso 1-->
 					<div th:case="'Corroborando pago'" style="text-align: center;">
 						<img src="https://blogger.googleusercontent.com/img/a/AVvXsEgz8Uf_8drsxjwpF9UfTauhaH2T1jpwhG8LUQM7wnX6RxQlrR45NPxVSI_HDBs3heU3HB4x854LQ_R6tkxFQGD9RwSbuRpyA-VZjc3Ma2VeTxRoxSUsHdxoRUlmRuoBgTdrByOyOFetcbxtNcs3cP3hCWSHW9DUBsMefYa95siztZOAj_QGJcUe5vdbzkk"
-							alt=" ctmr">
+							alt=" 1">
 					</div>
 					<!-- paso 2-->
 					<div th:case="'confirmado'" style="text-align: center;">
 						<img src="https://blogger.googleusercontent.com/img/a/AVvXsEibz3-tQTj4kKzcxcjO-26EEi4IlWnRlkD5XNeUxzQOzqeCYATf6hIfkJSlxKq_-1Vb8o60-HNUNpDOB4i81SuT4wH4VyOvM-e73FoKVNn_6KCvWs8530hRkZlLLkV13ew3I0R2zT8Et7rMAe96R0JoM4XYBRCDCTH0rTRuXSk_RjxuGZDBteWhmJZ9yDo"
-							alt=" ctmr">
+							alt=" 2">
+					</div>
+					<!-- paso 3-->
+					<div th:case="'lista para entregar'" style="text-align: center;">
+						<img src="https://blogger.googleusercontent.com/img/a/AVvXsEj0DAvzq8NjdYG95shCerunZE4hAjj-TfPw9yyliMFPyamJz6vr7LKH8t5v01Qz0A3bJBDyWTcNGjfWUMsqeORE9lBPcSwN431XfpUlc1fAdKTkL2Z4kuQoCjRNfW4XuyzlW4XXOKO4AM0OMBIFTucbFRokka3ISn3iP0tW-ro5un-niIWZ_ZEtH2S5OZo"
+							alt=" 3">
+					</div>
+					<div th:case="'entregada'" style="text-align: center;">
+						<img src="https://blogger.googleusercontent.com/img/a/AVvXsEhcPQMm2NsM_MrzP6gX4ZPAE7w7PO6f1ELHOxIy9aUhQ0f6i8CtzadlYUYPcVdrZkPaNeIwUO2AHPi9dnVBaXWk21nAePbfduL205iEkOGx5PU9100ygybjOQUarOukj3UxGEQmJCrhDDFuzYDGrU0PxD4W1yLOS4QA55WxYC7Q4GQMBcnkmYPBI9Wd1VA"
+							alt=" 4">
 					</div>
 
 
@@ -60,8 +90,8 @@
 				</div>
 				<div
 					style="background-color: rgba(220, 53, 69, 1); margin-top: 0.5rem; padding: 0.5rem; text-align: center; color: white;">
-					<h3 style="margin: 0;">Modalidad: <span>{modalidad}</span> <i class="fa-sharp fa-solid fa-store"
-							style="color: #ffffff;"></i></h3>
+					<h3 style="margin: 0;">Modalidad: <span> Recojo en tienda</span> <i
+							class="fa-sharp fa-solid fa-store" style="color: #ffffff;"></i></h3>
 				</div>
 
 				<div
@@ -86,22 +116,27 @@
 																<td th:text="${item.id}"></td>
 					
 					-->
-					<div style="padding: 1rem;">
+					<div style="padding: 1rem;" th:each="l : ${lineas}">
 						<div style="display: flex; flex-wrap: wrap; padding: 0 1rem;border-radius: 20 20;">
 							<div style="width: 50%; text-align: center;">
-								<span style="text-transform: uppercase; font-weight: bold;">Libro como encontrar trabajo
+								<span style="text-transform: uppercase; font-weight: bold;"
+									th:text="${l.producto.descripcion}">
 								</span>
 							</div>
 							<div style="width: 16.666667%; text-align: center;">
-								<span style="text-transform: uppercase; font-weight: bold;">Caja 24 unidades</span>
+								<span style="text-transform: uppercase; font-weight: bold;"
+									th:text="${l.cantidad}"></span>
 							</div>
 							<div style="width: 16.666667%; text-align: center;">
-								<span style="text-transform: uppercase; font-weight: bold;">300</span>
+								<span style="text-transform: uppercase; font-weight: bold;"
+									th:text="${l.producto.precioVenta}"></span>
 							</div>
 							<div style="width: 16.666667%; text-align: center;">
-								<span style="text-transform: uppercase; font-weight: bold;">1500.00</span>
+								<span style="text-transform: uppercase; font-weight: bold;"
+									th:text="${l.importe}"></span>
 							</div>
 						</div>
+						<hr>
 					</div>
 				</div>
 
@@ -116,14 +151,27 @@
 								S/
 							</div>
 							<div style="width: 33.333333%; text-align: right;">
-								{total}
+								<span th:text="${sub}"></span>
 							</div>
 						</div>
+
+						<div style="display: flex; flex-wrap: wrap;">
+							<div style="width: 33.333333%; text-align: right;">
+								IGV
+							</div>
+							<div style="width: 33.333333%; text-align: left;">
+								S/
+							</div>
+							<div style="width: 33.333333%; text-align: right;">
+								<span th:text="${igv}"></span>
+							</div>
+						</div>
+
 						<div style="width: 100%; text-align: center;">
 							<hr>
 						</div>
 						<div style="display: flex; flex-wrap: wrap;">
-							<hr>
+
 							<div
 								style="width: 33.333333%; text-align: right; color: rgba(220, 53, 69, 1); font-weight: bold;">
 								Total
@@ -134,7 +182,7 @@
 							</div>
 							<div
 								style="width: 33.333333%; text-align: right; color: rgba(220, 53, 69, 1); font-weight: bold;">
-								{total}
+								<span th:text="${tot}"></span>
 							</div>
 						</div>
 

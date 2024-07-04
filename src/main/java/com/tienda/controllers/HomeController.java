@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -30,7 +29,6 @@ import com.tienda.entities.Usuario;
 import com.tienda.entities.listas.ListaMedidas;
 import com.tienda.mail.Email;
 import com.tienda.mail.JavaMailSenderService;
-import com.tienda.repositories.IProductoDao;
 import com.tienda.services.ICategoriaService;
 import com.tienda.services.IComentarioService;
 import com.tienda.services.IProductoService;

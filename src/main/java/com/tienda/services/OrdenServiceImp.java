@@ -40,8 +40,16 @@ public class OrdenServiceImp implements IOrdenService {
 	}
 
 	@Override
-	public void aprobarPago(String numero) throws MessagingException {
+	public Orden findById(int id) {
+		return ordenDao.findById(id).get();
+	}
+
+	@Override
+	public Orden listaEntregar(String numero) throws MessagingException {
+
 		Orden o = ordenDao.findByNumero(numero);
+		o.setEstado("lista para entregar");
+		ordenDao.save(o);
 		Map<String, Object> datos = new HashMap<>();
 
 		Email mail = new Email();
@@ -49,23 +57,67 @@ public class OrdenServiceImp implements IOrdenService {
 		datos.put("nombre", o.getUsuario().getNombres());
 		datos.put("numero", o.getNumeroBoleta());
 		datos.put("estado", o.getEstado());
+		datos.put("lineas", o.getDetalles());
+		datos.put("sub", String.format("%.2f", o.getSubTotal()));
+		datos.put("igv", String.format("%.2f", o.getIgv()));
+		datos.put("tot", String.format("%.2f", o.getTotal()));
+		mail.setTo(o.getUsuario().getCorreo());
+		mail.setSubject("Tu pedido " + o.getNumeroBoleta() + " se encuentra listo para recoger ");
+		mail.setBody("");
+		mailSender.enviarCorreo(mail, datos);
+		return o;
 
+	}
+
+	@Override
+	public Orden aprobarPago(String numero) throws MessagingException {
+		Orden o = ordenDao.findByNumero(numero);
+		o.setEstado("confirmado");
+		ordenDao.save(o);
+		Map<String, Object> datos = new HashMap<>();
+
+		Email mail = new Email();
+		// variables del correo
+		datos.put("nombre", o.getUsuario().getNombres());
+		datos.put("numero", o.getNumeroBoleta());
+		datos.put("estado", o.getEstado());
+		datos.put("lineas", o.getDetalles());
+		datos.put("sub", String.format("%.2f", o.getSubTotal()));
+		datos.put("igv", String.format("%.2f", o.getIgv()));
+		datos.put("tot", String.format("%.2f", o.getTotal()));
 		mail.setTo(o.getUsuario().getCorreo());
 		mail.setSubject("El pago de tu orden nº " + o.getNumeroBoleta() + " ha sido confirmado");
 		mail.setBody("");
 		mailSender.enviarCorreo(mail, datos);
-		ordenDao.aprobarPago(numero);
+		return o;
 	}
 
 	@Override
-	public Orden findById(int id) {
-		return ordenDao.findById(id).get();
+	public Orden entregar(String numero) throws MessagingException {
+		Orden o = ordenDao.findByNumero(numero);
+		o.setEstado("entregada");
+		ordenDao.save(o);
+		Map<String, Object> datos = new HashMap<>();
+
+		Email mail = new Email();
+		// variables del correo
+		datos.put("nombre", o.getUsuario().getNombres());
+		datos.put("numero", o.getNumeroBoleta());
+		datos.put("estado", o.getEstado());
+		datos.put("lineas", o.getDetalles());
+		datos.put("sub", String.format("%.2f", o.getSubTotal()));
+		datos.put("igv", String.format("%.2f", o.getIgv()));
+		datos.put("tot", String.format("%.2f", o.getTotal()));
+		mail.setTo(o.getUsuario().getCorreo());
+		mail.setSubject("Tu orden nº " + o.getNumeroBoleta() + " ha sido entregada");
+		mail.setBody("");
+		mailSender.enviarCorreo(mail, datos);
+		return o;
 	}
 
 	@Override
-	public void listaEntregar(String numero) {
-		ordenDao.listaEntregar(numero);
-
+	public List<Orden> findByDni(String dni) {
+		return ordenDao.findByDni(dni);
 	}
 
 }

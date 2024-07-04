@@ -127,12 +127,16 @@ public class VentaServiceImp implements IVentaService {
 		datos.put("nombre", usu.getNombres());
 		datos.put("numero", num);
 		datos.put("estado", est);
+		datos.put("lineas", detalles);
+		datos.put("sub", String.format("%.2f", orden.getSubTotal()));
+		datos.put("igv", String.format("%.2f", orden.getIgv()));
+		datos.put("tot", String.format("%.2f", orden.getTotal()));
 		ordenDetallesDao.saveAll(detalles);
 		// para enviar el correo
 		Email mail = new Email();
 		mail.setTo(u.getCorreo());
-		mail.setSubject("Orden de Compra");
-		mail.setBody("Tu orden nº " + num + " ha sido recibida");
+		mail.setSubject("¡Hemos recibido tu pedido " + num);
+		mail.setBody("");
 		mailSender.enviarCorreo(mail, datos);
 
 		c.setItems(new ArrayList<>());

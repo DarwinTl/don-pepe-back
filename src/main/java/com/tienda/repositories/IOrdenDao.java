@@ -17,8 +17,8 @@ public interface IOrdenDao extends JpaRepository<Orden, Integer> {
 	@Query("select o from Orden o where o.estado=?1")
 	public List<Orden> listByEstado(String estado);
 
-	@Query("select o from Orden o where o.numeroBoleta=?1")
-	public Orden findByNumero(String num);
+	@Query("select o from Orden o where o.numeroBoleta=:numeroBoleta")
+	public Orden findByNumero(String numeroBoleta);
 
 	@Modifying
 	@Transactional
@@ -29,5 +29,8 @@ public interface IOrdenDao extends JpaRepository<Orden, Integer> {
 	@Transactional
 	@Query("UPDATE Orden o set o.estado='lista para entregar' where o.numeroBoleta=?1")
 	public void listaEntregar(String numero);
+
+	@Query("select o from Orden o where o.usuario.numeroDocumento=?1 and o.estado='lista para entregar'")
+	public List<Orden> findByDni(String dni);
 
 }
